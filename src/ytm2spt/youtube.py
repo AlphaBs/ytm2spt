@@ -40,17 +40,17 @@ class YoutubeMusic:
         result = self.ytmusic.get_playlist(self.playlist_id, limit=None)
         return result
 
-    def __fetch_liked_songs(self, limit: int = 100) -> dict:
-        return self.ytmusic.get_liked_songs(limit=limit)
+    def __fetch_liked_songs(self) -> dict:
+        return self.ytmusic.get_liked_songs(limit=None)
     
     def set_playlist_id(self, playlist_id: str):
         self.playlist_id = playlist_id
         self.playlist = self.__fetch_playlist()
         self.songs = []
 
-    def set_liked_songs(self, limit: int = 100):
+    def set_liked_songs(self):
         self.playlist_id = "LM"
-        self.playlist = self.__fetch_liked_songs(limit=limit)
+        self.playlist = self.__fetch_liked_songs()
         self.songs = []
 
     def get_songs_from_playlist(self, limit: Optional[int] = None):

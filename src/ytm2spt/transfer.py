@@ -76,9 +76,8 @@ def transfer_playlist(youtube_arg, spotify_arg, spotify_playlist_name, youtube_o
     is_youtube_liked = isinstance(youtube_arg, str) and youtube_arg.lower() == "lm"
 
     if is_youtube_liked:
-        likes_limit = limit if limit else 100
-        yt.set_liked_songs(likes_limit)
-        ytm2spt_logger.info(f"Youtube Liked Songs (limit={likes_limit}) loaded")
+        yt.set_liked_songs()
+        ytm2spt_logger.info(f"Youtube Liked Songs loaded")
     else:
         youtube_id = get_youtube_playlist_id(youtube_arg)
         ytm2spt_logger.info(f"Youtube Playlist ID: {youtube_id}")
