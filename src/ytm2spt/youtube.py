@@ -1,4 +1,4 @@
-from ytmusicapi import YTMusic
+from ytmusicapi import OAuthCredentials, YTMusic
 from dataclasses import dataclass
 import re
 import requests
@@ -23,12 +23,13 @@ def clean_song_info(song: Song) -> Song:
 
 
 class YoutubeMusic:
-    def __init__(self, oauth_json: str = None):
+    def __init__(self, oauth_json: str = None, client_id: str = None, client_secret: str = None):
         self.playlist_id = ""
         self.playlist = {}
         self.songs = []
         self.yt_logger = setup_logger(__name__)
-        self.ytmusic = YTMusic(oauth_json)
+        print(oauth_json)
+        self.ytmusic = YTMusic(oauth_json, oauth_credentials=OAuthCredentials(client_id=client_id, client_secret=client_secret))
 
     def __fetch_playlist(self) -> dict:
         result = self.ytmusic.get_playlist(self.playlist_id, limit=None)

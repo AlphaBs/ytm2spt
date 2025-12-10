@@ -63,9 +63,9 @@ def set_yt_thumbnail_as_sp_cover(dryrun: bool = False):
         sp.set_playlist_cover(encoded_img)
 
 
-def transfer_playlist(youtube_arg, spotify_arg, spotify_playlist_name, youtube_oauth, dryrun, create_new, limit):
+def transfer_playlist(youtube_arg, spotify_arg, spotify_playlist_name, youtube_oauth, youtube_client_id, youtube_client_secret, dryrun, create_new, limit):
     global yt, sp
-    yt = YoutubeMusic(youtube_oauth)
+    yt = YoutubeMusic(youtube_oauth, youtube_client_id, youtube_client_secret)
     sp = Spotify()
     ytm2spt_logger = setup_logger(__name__)
 

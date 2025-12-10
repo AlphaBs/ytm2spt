@@ -25,6 +25,10 @@ def init_settings():
         SETTINGS.setValue("SPOTIFY_CLIENT_SECRET", "")
     if "SPOTIFY_REDIRECT_URI" not in keys:
         SETTINGS.setValue("SPOTIFY_REDIRECT_URI", "http://localhost:8888/callback")
+    if "YT_CLIENT_ID" not in keys:
+        SETTINGS.setValue("YT_CLIENT_ID", "")
+    if "YT_CLIENT_SECRET" not in keys:
+        SETTINGS.setValue("YT_CLIENT_SECRET", "")
 
     SETTINGS.sync()
     
@@ -107,6 +111,15 @@ class YouTubeSettingsDialog(QDialog):
         self.oauth_button.clicked.connect(self.get_oauth_token)
         layout.addWidget(self.oauth_button)
 
+        form_layout = QFormLayout()
+        self.yt_client_id_input = QLineEdit()
+        self.yt_client_id_input.setText(SETTINGS.value("YT_CLIENT_ID", defaultValue=""))
+        form_layout.addRow("Client ID", self.yt_client_id_input)
+        self.yt_client_secret_input = QLineEdit()
+        self.yt_client_secret_input.setText(SETTINGS.value("YT_CLIENT_SECRET", defaultValue=""))
+        form_layout.addRow("Client Secret", self.yt_client_secret_input)
+        layout.addLayout(form_layout)
+
         self.message_label = QLabel("No OAuth token found")
         self.message_label.setWordWrap(True)
         self.message_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
@@ -115,7 +128,15 @@ class YouTubeSettingsDialog(QDialog):
         layout.addWidget(self.message_label)
 
     def get_oauth_token(self):
-        setup_oauth(filepath=YTOAUTH_PATH, open_browser=True)
+        SETTINGS.setValue("YT_CLIENT_ID", self.yt_client_id_input.text())
+        SETTINGS.setValue("YT_CLIENT_SECRET", self.yt_client_secret_input.text())
+        SETTINGS.sync()
+        setup_oauth(
+            client_id=self.yt_client_id_input.text(),
+            client_secret=self.yt_client_secret_input.text(),
+            filepath=YTOAUTH_PATH,
+            open_browser=True
+        )
         self.message_label.setText("OAuth token saved at " + YTOAUTH_PATH)
         # Qt sleep 3 seconds
         QtCore.QTimer.singleShot(3000, self.close)
@@ -298,12 +319,14 @@ class MainWindow(QMainWindow):
             spotify_playlist_name = self.spname_input.text().strip()
         
         youtube_oauth = YTOAUTH_PATH if self.yt_private_checkbox.isChecked() else None
+        youtube_client_id = SETTINGS.value("YT_CLIENT_ID") if self.yt_private_checkbox.isChecked() else None
+        youtube_client_secret = SETTINGS.value("YT_CLIENT_SECRET") if self.yt_private_checkbox.isChecked() else None
         dry_run = self.dryrun_checkbox.isChecked()
         create_new = self.create_new_checkbox.isChecked()
         limit = self.limit_input.value() if self.limit_input.value() > 0 else None
 
         # Run ytm2spt
-        self.worker = RunCommandWorker(youtube_arg, spotify_arg, spotify_playlist_name, youtube_oauth, dry_run, create_new, limit)
+        self.worker = RunCommandWorker(youtube_arg, spotify_arg, spotify_playlist_name, youtube_oauth, youtube_client_id, youtube_client_secret, dry_run, create_new, limit)
         self.worker.completed.connect(self.run_finished)
         self.worker.error.connect(self.run_error)
         self.worker.start()
@@ -337,12 +360,14 @@ class RunCommandWorker(QThread):
     completed = Signal()
     error = Signal(str)
 
-    def __init__(self, youtube_arg, spotify_arg, spotify_playlist_name, youtube_oauth, dry_run, create_new, limit):
+    def __init__(self, youtube_arg, spotify_arg, spotify_playlist_name, youtube_oauth, youtube_client_id, youtube_client_secret, dry_run, create_new, limit):
         super().__init__()
         self.youtube_arg = youtube_arg
         self.spotify_arg = spotify_arg
         self.spotify_playlist_name = spotify_playlist_name
         self.youtube_oauth = youtube_oauth
+        self.youtube_client_id = youtube_client_id
+        self.youtube_client_secret = youtube_client_secret
         self.dry_run = dry_run
         self.create_new = create_new
         self.limit = limit
@@ -353,7 +378,7 @@ class RunCommandWorker(QThread):
             os.environ["SPOTIFY_CLIENT_ID"] = SETTINGS.value("SPOTIFY_CLIENT_ID")
             os.environ["SPOTIFY_CLIENT_SECRET"] = SETTINGS.value("SPOTIFY_CLIENT_SECRET")
             os.environ["SPOTIFY_REDIRECT_URI"] = SETTINGS.value("SPOTIFY_REDIRECT_URI")
-            transfer_playlist(self.youtube_arg, self.spotify_arg, self.spotify_playlist_name, self.youtube_oauth, self.dry_run, self.create_new, self.limit)
+            transfer_playlist(self.youtube_arg, self.spotify_arg, self.spotify_playlist_name, self.youtube_oauth, self.youtube_client_id, self.youtube_client_secret, self.dry_run, self.create_new, self.limit)
             self.completed.emit()
         except Exception as e:
             print(e)
