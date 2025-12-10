@@ -127,7 +127,7 @@ class YouTubeSettingsDialog(QDialog):
         form_layout = QFormLayout()
         self.yt_oauth_path_input = QLineEdit()
         self.yt_oauth_path_input.setText(get_ytoauth_path())
-        form_layout.addRow("OAuth JSON Path", self.yt_oauth_path_input)
+        form_layout.addRow("JSON File Path", self.yt_oauth_path_input)
         self.yt_client_id_input = QLineEdit()
         self.yt_client_id_input.setText(get_setting_str("YT_CLIENT_ID"))
         form_layout.addRow("Client ID", self.yt_client_id_input)
