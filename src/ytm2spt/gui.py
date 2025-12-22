@@ -197,8 +197,13 @@ class MainWindow(QMainWindow):
         yt_layout = QVBoxLayout(yt_group)
         yt_layout.addWidget(QLabel("Playlist URL or ID"))
         self.yt_input = QLineEdit()
+        self.prev_yt_value = ""
         self.yt_input.textChanged.connect(self.update_command)
         yt_layout.addWidget(self.yt_input)
+
+        self.yt_liked_checkbox = QCheckBox("Use Liked Songs (LM)")
+        self.yt_liked_checkbox.toggled.connect(self.yt_liked_toggled)
+        yt_layout.addWidget(self.yt_liked_checkbox)
 
         self.yt_private_checkbox = QCheckBox("Private Playlist")
         self.yt_private_checkbox.stateChanged.connect(self.yt_private_toggled)
@@ -381,6 +386,16 @@ class MainWindow(QMainWindow):
         if self.yt_private_checkbox.isChecked():
             if not os.path.exists(get_ytoauth_path()):
                 self.open_youtube_settings()
+
+    def yt_liked_toggled(self, checked: bool):
+        if checked:
+            self.prev_yt_value = self.yt_input.text()
+            self.yt_input.setText("LM")
+            self.yt_input.setEnabled(False)
+        else:
+            self.yt_input.setEnabled(True)
+            self.yt_input.setText(self.prev_yt_value)
+        self.update_command()
 
 
 class RunCommandWorker(QThread):
