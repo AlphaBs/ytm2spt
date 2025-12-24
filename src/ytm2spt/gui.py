@@ -198,6 +198,7 @@ class MainWindow(QMainWindow):
         yt_layout.addWidget(QLabel("Playlist URL or ID"))
         self.yt_input = QLineEdit()
         self.prev_yt_value = ""
+        self.prev_yt_private_checked = False
         self.yt_input.textChanged.connect(self.update_command)
         yt_layout.addWidget(self.yt_input)
 
@@ -390,11 +391,16 @@ class MainWindow(QMainWindow):
     def yt_liked_toggled(self, checked: bool):
         if checked:
             self.prev_yt_value = self.yt_input.text()
+            self.prev_yt_private_checked = self.yt_private_checkbox.isChecked()
             self.yt_input.setText("LM")
             self.yt_input.setEnabled(False)
+            self.yt_private_checkbox.setChecked(True)
+            self.yt_private_checkbox.setEnabled(False)
         else:
             self.yt_input.setEnabled(True)
             self.yt_input.setText(self.prev_yt_value)
+            self.yt_private_checkbox.setEnabled(True)
+            self.yt_private_checkbox.setChecked(self.prev_yt_private_checked)
         self.update_command()
 
 
